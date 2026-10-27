@@ -38,10 +38,6 @@ export class BurgerMenu {
     await expect(this.page).toHaveURL(/\/inventory\.html/);
   }
 
-  async clickAbout(): Promise<void> {
-    await this.about.click();
-  }
-
   async clickLogout(): Promise<void> {
     await this.logout.click();
     await expect(this.page).toHaveURL(/saucedemo\.com\/?$/);

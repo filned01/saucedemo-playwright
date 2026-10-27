@@ -6,11 +6,15 @@ export class ProductsPage {
   readonly header: Header;
   readonly inventoryItems: Locator;
   readonly sortDropdown: Locator;
+  readonly detailName: Locator;
+  readonly detailPrice: Locator;
 
   constructor(private readonly page: Page) {
     this.header = new Header(page);
     this.inventoryItems = page.locator('[data-test="inventory-item"]');
     this.sortDropdown = page.locator('[data-test="product-sort-container"]');
+    this.detailName = page.locator('.inventory_details_name');
+    this.detailPrice = page.locator('.inventory_details_price');
   }
 
   async expectLoaded(): Promise<void> {

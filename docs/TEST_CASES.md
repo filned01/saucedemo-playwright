@@ -66,7 +66,7 @@ Checkout customers are the synthetic records in `test-data/customers.json`.
 | --- | --- |
 | Open and close | All Items, Dynamic Catalog, About, Logout, and Reset App State appear, then the menu hides |
 | All Items from the cart | Catalog loads and the cart badge is unchanged |
-| About | Navigates away from the shop to a `saucelabs.com` URL |
+| About | Its link destination is on `saucelabs.com`; the test does not navigate away from the shop |
 | Logout | Login form returns; signing in again keeps the item that was in the cart |
 | Reset App State on the catalog | Badge clears immediately; after reload the product shows Add to cart |
 | Reset App State during checkout | Badge clears on the information step and after returning to the catalog |

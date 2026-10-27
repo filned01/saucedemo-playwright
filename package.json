@@ -6,6 +6,7 @@
   "scripts": {
     "test": "playwright test",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "test:auth": "playwright test tests/auth.spec.ts",
@@ -17,11 +18,15 @@
     "test:debug": "playwright test --debug"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.56.1",
     "@types/node": "^22.19.0",
-    "typescript": "^5.9.3"
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1"
   }
 }

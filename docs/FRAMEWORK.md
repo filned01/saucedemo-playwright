@@ -87,7 +87,7 @@ Tests do not click by screen coordinates and do not depend on the order of anony
 `playwright.config.ts` sets:
 
 - `baseURL` from `BASE_URL`, otherwise `https://www.saucedemo.com`
-- Chromium desktop as the project under test
+- Desktop Chromium, Firefox, and WebKit as browser projects
 - Parallel workers locally, two workers and two retries in CI
 - `forbidOnly` in CI so a leftover `test.only` fails the build
 - HTML and JUnit reporters, plus the list reporter in the terminal
@@ -101,12 +101,13 @@ The JUnit file at `test-results/junit-results.xml` is there for pipelines that i
 
 ## CI/CD
 
-`.github/workflows/playwright.yml` is a single job:
+`.github/workflows/playwright.yml` runs a quality job and a browser test matrix:
 
 1. Check out the repository.
 2. Install Node.js 22 and `npm ci`.
-3. Install Chromium and its operating-system dependencies.
-4. Run `npx playwright test`.
-5. Upload the HTML report and JUnit XML.
+3. Run ESLint and the TypeScript type check.
+4. Install each browser and its operating-system dependencies.
+5. Run the suite in parallel on Chromium, Firefox, and WebKit.
+6. Upload browser-specific HTML reports and test results.
 
 The workflow runs on push to `main` or `master`, on pull requests, and on manual dispatch. It does not deploy the application. SauceDemo is an external site, so the pipeline is a test runner, not a release pipeline.

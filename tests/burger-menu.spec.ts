@@ -23,10 +23,9 @@ test.describe('Burger menu', () => {
     await productsPage.header.expectCartCount(1);
   });
 
-  test('About leaves the shop for saucelabs.com', async ({ burgerMenu, page }) => {
+  test('About links to saucelabs.com', async ({ burgerMenu }) => {
     await burgerMenu.open();
-    await burgerMenu.clickAbout();
-    await expect(page).toHaveURL(/saucelabs\.com/);
+    await expect(burgerMenu.about).toHaveAttribute('href', /^https:\/\/(?:www\.)?saucelabs\.com(?:\/|$)/);
   });
 
   test('Logout returns to the login page and the cart is kept for the next sign-in', async ({

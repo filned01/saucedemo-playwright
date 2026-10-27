@@ -40,8 +40,8 @@ test.describe('Products page', () => {
   test('opens a product detail page and returns to the catalog', async ({ productsPage, page }) => {
     const product = products[0];
     await productsPage.openDetails(product);
-    await expect(page.locator('[data-test="inventory-item-name"]')).toHaveText(product.name);
-    await expect(page.locator('[data-test="inventory-item-price"]')).toHaveText(`$${product.price.toFixed(2)}`);
+    await expect(productsPage.detailName).toHaveText(product.name);
+    await expect(productsPage.detailPrice).toHaveText(`$${product.price.toFixed(2)}`);
     await page.locator('[data-test="back-to-products"]').click();
     await productsPage.expectLoaded();
   });

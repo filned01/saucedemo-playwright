@@ -16,7 +16,7 @@ Install the recommended **Playwright Test for VS Code** extension when Visual St
 
 ## Prerequisites
 
-- Node.js 18 or newer (Node.js 22 is used in CI)
+- Node.js 20.19 or newer (Node.js 22 is used in CI)
 - Network access to `https://www.saucedemo.com`
 
 ## Setup
@@ -25,7 +25,7 @@ From this folder:
 
 ```powershell
 npm install
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 ```
 
 ## Run the tests
@@ -41,6 +41,7 @@ Useful variants:
 | `npm run test:headed` | Runs in a visible browser |
 | `npm run test:ui` | Opens the Playwright UI runner |
 | `npm run typecheck` | Checks TypeScript types without running tests |
+| `npm run lint` | Checks TypeScript and JavaScript with ESLint |
 | `npm run test:auth` | Authentication only |
 | `npm run test:products` | Products page only |
 | `npm run test:cart` | Add to cart only |
@@ -73,4 +74,4 @@ Open the HTML report with `npm run report`. Both folders are gitignored because 
 
 ## CI
 
-`.github/workflows/playwright.yml` runs the suite on Ubuntu with Chromium, then uploads the HTML report and JUnit file as build artifacts. It runs on push, pull request, and manual dispatch once this folder is in a Git repository.
+`.github/workflows/playwright.yml` type-checks and lints the project, then runs the suite on Chromium, Firefox, and WebKit in parallel on Ubuntu. Each browser job uploads its HTML report and test results. It runs on push, pull request, and manual dispatch.

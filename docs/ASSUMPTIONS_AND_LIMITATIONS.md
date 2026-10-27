@@ -8,7 +8,7 @@
 - Sales tax is 8% of the item subtotal, rounded to the nearest cent. That matches the overview page on the date this suite was written.
 - A successful order ends at “Thank you for your order!”. The demo does not take payment, create a real shipment, or send email.
 - The signed-in session lives in the browser context. Playwright’s default isolation (one context per test) is what keeps carts from colliding.
-- Chromium is the browser of record for local runs and for CI. The Playwright config can gain Firefox and WebKit projects later without rewriting specs.
+- Chromium, Firefox, and WebKit are supported locally and in CI. The same browser-independent specs run in each project.
 - Checkout customers in `test-data/customers.json` are synthetic. Any non-empty first name, last name, and postal code are accepted by the demo.
 - English UI copy is part of the contract for error messages and the order-complete heading. Those strings are asserted exactly.
 
@@ -16,7 +16,7 @@
 
 - The suite is UI-only. It does not call a private API, and the demo does not expose a database to check after checkout.
 - `problem_user`, `error_user`, and `visual_user` ship with intentional defects. Asserting those defects as failures would make the suite red for behavior the site is designed to show. Only `problem_user` reaching the catalog is automated.
-- The About item navigates from SauceDemo to Sauce Labs. The test checks that the URL contains `saucelabs.com` without waiting for the external marketing page to finish loading. It does not assert page content, which changes independently of the shop.
+- The About menu entry links to Sauce Labs. The test checks the link destination without navigating to or depending on the external marketing site.
 - There is no visual-regression baseline. Screenshots and video are failure evidence, not pixel diffs.
 - There is no quantity control. The demo toggles a product between Add and Remove and always uses a quantity of one.
 - Logout returns to the login form, but the cart is stored in the browser and is still there after the same user signs in again. Reset App State is what clears it. The logout test asserts the cart is kept.
@@ -25,7 +25,7 @@
 - The burger menu includes a Dynamic Catalog entry. The open-menu test checks that the entry is visible. The suite does not follow it, because that destination is separate from the five flows in the assignment.
 - On the product detail page the add control is a single “Add to cart” button. It does not use the catalog `data-test` slug. The detail-page cart test uses that button name.
 - Tests need a live network path to SauceDemo. An outage, a captive portal, or a change in the site’s DOM will fail the run. Locators prefer `data-test` hooks so ordinary style changes do not cause that.
-- CI runs Chromium only, with two workers and two retries. It does not deploy, publish, or test other browsers.
+- CI runs Chromium, Firefox, and WebKit with two workers and two retries per browser. It does not deploy or publish the application.
 - The HTML report and JUnit file are produced on the machine that runs the tests. They are not checked in.
 - Sorting by price asserts the first price, the last price, and that the list is ordered. The two $15.99 items may swap relative order without failing the price test. Name sorting asserts the full name order.
 
