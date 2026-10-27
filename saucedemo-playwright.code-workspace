@@ -1,0 +1,14 @@
+{
+  "folders": [
+    {
+      "name": "SauceDemo Playwright",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "playwright.reuseBrowser": true
+  },
+  "extensions": {
+    "recommendations": ["ms-playwright.playwright"]
+  }
+}

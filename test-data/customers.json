@@ -1,0 +1,22 @@
+{
+  "valid": {
+    "firstName": "Fake",
+    "lastName": "Person",
+    "postalCode": "00000"
+  },
+  "missingFirstName": {
+    "firstName": "",
+    "lastName": "Person",
+    "postalCode": "00000"
+  },
+  "missingLastName": {
+    "firstName": "Fake",
+    "lastName": "",
+    "postalCode": "00000"
+  },
+  "missingPostalCode": {
+    "firstName": "Fake",
+    "lastName": "Person",
+    "postalCode": ""
+  }
+}

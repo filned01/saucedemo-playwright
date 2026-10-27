@@ -1,0 +1,27 @@
+{
+  "standard": {
+    "username": "standard_user",
+    "password": "secret_sauce",
+    "role": "Happy-path shopper"
+  },
+  "lockedOut": {
+    "username": "locked_out_user",
+    "password": "secret_sauce",
+    "role": "Account locked by the demo site"
+  },
+  "problem": {
+    "username": "problem_user",
+    "password": "secret_sauce",
+    "role": "User that exposes known visual defects on the demo site"
+  },
+  "performance": {
+    "username": "performance_glitch_user",
+    "password": "secret_sauce",
+    "role": "User with an intentional login delay"
+  },
+  "invalid": {
+    "username": "not_a_real_user",
+    "password": "not_the_demo_password",
+    "role": "Unknown credentials"
+  }
+}
