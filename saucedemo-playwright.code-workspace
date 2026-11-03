@@ -6,7 +6,7 @@
     }
   ],
   "settings": {
-    "playwright.reuseBrowser": true
+    "playwright.reuseBrowser": false
   },
   "extensions": {
     "recommendations": ["ms-playwright.playwright"]

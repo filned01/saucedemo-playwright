@@ -2,7 +2,7 @@
 
 ## Assumptions
 
-- The application under test is the public Sauce Demo shop at `https://www.saucedemo.com/`. `BASE_URL` can point at another host only if that host serves the same UI.
+- The application under test is the public Sauce Demo shop at `https://www.saucedemo.com/` by default. QA, DEV, and PROD can each be configured with `QA_BASE_URL`, `DEV_BASE_URL`, and `PROD_BASE_URL`; each target must serve the same UI. DEV and PROD URLs must be explicitly configured before those environments can run. `BASE_URL` remains a compatibility alias for QA.
 - The published demo accounts and the shared demo password stay as the site documents them. They are stored in `test-data/users.json` so the suite runs without a secrets store. They are demo credentials for a public training site, not credentials for any other system.
 - The catalog stays at six products with the names, ids, slugs, and prices in `test-data/products.json`. Checkout math reads those prices. A catalog change requires a test-data update, not a change to the assertion style.
 - Sales tax is 8% of the item subtotal, rounded to the nearest cent. That matches the overview page on the date this suite was written.

@@ -86,7 +86,10 @@ Tests do not click by screen coordinates and do not depend on the order of anony
 
 `playwright.config.ts` sets:
 
-- `baseURL` from `BASE_URL`, otherwise `https://www.saucedemo.com`
+- `baseURL` from the selected environment: `QA_BASE_URL`, `DEV_BASE_URL`, or `PROD_BASE_URL`
+- QA defaults to `https://www.saucedemo.com`; `BASE_URL` remains a compatibility alias for `QA_BASE_URL`
+- `TEST_ENV` selects `qa`, `dev`, `prod`, or `all` (defaults to `qa`); all environments are separate Playwright projects for every browser
+- The VS Code workspace sets `playwright.env.TEST_ENV` to `all`, so the Playwright Test Explorer can select environment/browser projects independently
 - Desktop Chromium, Firefox, and WebKit as browser projects
 - Parallel workers locally, two workers and two retries in CI
 - `forbidOnly` in CI so a leftover `test.only` fails the build

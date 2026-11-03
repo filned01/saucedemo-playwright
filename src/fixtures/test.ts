@@ -6,6 +6,7 @@ import { CheckoutPage } from '../pages/CheckoutPage';
 import { BurgerMenu } from '../pages/BurgerMenu';
 
 type AppFixtures = {
+  validateEnvironment: void;
   loginPage: LoginPage;
   productsPage: ProductsPage;
   cartPage: CartPage;
@@ -14,6 +15,20 @@ type AppFixtures = {
 };
 
 export const test = base.extend<AppFixtures>({
+  validateEnvironment: [
+    async ({ baseURL }, use, testInfo) => {
+      const environment = testInfo.project.metadata.environment;
+
+      if (typeof environment === 'string' && !baseURL) {
+        throw new Error(
+          `Missing URL configuration for ${environment.toUpperCase()}. Set ${environment.toUpperCase()}_BASE_URL before running the tests.`,
+        );
+      }
+
+      await use();
+    },
+    { auto: true },
+  ],
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
   },

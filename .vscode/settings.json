@@ -1,5 +1,8 @@
 {
-  "playwright.reuseBrowser": true,
-  "playwright.showTrace": true,
+  "playwright.env": {
+    "TEST_ENV": "qa"
+  },
+  "playwright.reuseBrowser": false,
+  "playwright.showTrace": false,
   "typescript.tsdk": "node_modules/typescript/lib"
 }

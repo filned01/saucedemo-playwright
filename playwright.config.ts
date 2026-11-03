@@ -1,6 +1,44 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const isCi = !!process.env.CI;
+const environments = ['qa', 'dev', 'prod'] as const;
+type Environment = (typeof environments)[number];
+
+function isEnvironment(value: string): value is Environment {
+  return environments.some((environment) => environment === value);
+}
+
+function selectEnvironments(selection: string): Environment[] {
+  if (selection === 'all') {
+    return [...environments];
+  }
+
+  if (isEnvironment(selection)) {
+    return [selection];
+  }
+
+  throw new Error(`Invalid TEST_ENV "${process.env.TEST_ENV}". Choose qa, dev, prod, or all.`);
+}
+
+const requestedEnvironment = (process.env.TEST_ENV ?? 'qa').toLowerCase();
+const selectedEnvironments = selectEnvironments(requestedEnvironment);
+
+const configuredUrls: Record<Environment, string | undefined> = {
+  qa: process.env.QA_BASE_URL ?? process.env.BASE_URL ?? 'https://www.saucedemo.com',
+  dev: process.env.DEV_BASE_URL ?? process.env.BASE_URL ?? 'https://www.saucedemo.com',
+  prod: process.env.PROD_BASE_URL,
+};
+
+const environmentUrls = selectedEnvironments.map((environment) => ({
+  environment,
+  baseURL: configuredUrls[environment],
+}));
+
+const browsers = [
+  { name: 'chromium', device: devices['Desktop Chrome'] },
+  { name: 'firefox', device: devices['Desktop Firefox'] },
+  { name: 'webkit', device: devices['Desktop Safari'] },
+];
 
 export default defineConfig({
   testDir: './tests',
@@ -16,25 +54,17 @@ export default defineConfig({
     ['junit', { outputFile: 'test-results/junit-results.xml' }],
   ],
   use: {
-    baseURL: process.env.BASE_URL ?? 'https://www.saucedemo.com',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
   },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
+  projects: environmentUrls.flatMap(({ environment, baseURL }) =>
+    browsers.map(({ name, device }) => ({
+      name: environmentUrls.length === 1 ? name : `${environment}-${name}`,
+      use: { ...device, ...(baseURL ? { baseURL } : {}) },
+      metadata: { environment },
+    })),
+  ),
 });

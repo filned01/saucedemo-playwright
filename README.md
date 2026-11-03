@@ -40,6 +40,10 @@ Useful variants:
 | --- | --- |
 | `npm run test:headed` | Runs in a visible browser |
 | `npm run test:ui` | Opens the Playwright UI runner |
+| `npm run test:qa` | Runs on QA (the default SauceDemo URL unless overridden) |
+| `npm run test:dev` | Runs on DEV |
+| `npm run test:prod` | Runs on PROD |
+| `npm run test:all` | Runs on QA, DEV, and PROD across all browsers |
 | `npm run typecheck` | Checks TypeScript types without running tests |
 | `npm run lint` | Checks TypeScript and JavaScript with ESLint |
 | `npm run test:auth` | Authentication only |
@@ -50,12 +54,30 @@ Useful variants:
 | `npm run report` | Opens the last HTML report |
 | `npm run test:debug` | Runs with the Playwright inspector |
 
-Override the target site without editing code:
+Configure the environment URLs without editing code. QA defaults to the public SauceDemo URL; DEV and PROD must be configured before running them:
 
 ```powershell
-$env:BASE_URL = "https://www.saucedemo.com"
-npm test
+$env:QA_BASE_URL = "https://qa.example.com"
+$env:DEV_BASE_URL = "https://dev.example.com"
+$env:PROD_BASE_URL = "https://www.example.com"
+npm run test:dev
 ```
+
+Choose `npm run test:qa`, `npm run test:dev`, or `npm run test:prod` to run a single environment, or `npm run test:all` to run the full browser matrix against all three. Each target must serve the same UI and test accounts expected by this suite. For compatibility, `BASE_URL` remains an alias for the QA URL; `QA_BASE_URL` takes precedence.
+
+### Choose an environment in VS Code
+
+The workspace configures the Playwright extension to show projects for all three environments. Open the **Testing** view, use the Playwright project selector to check the environment/browser projects you want (for example, `qa-chromium`), then run the selected tests. QA is ready by default. To run DEV or PROD, add their URLs to `playwright.env` in `.vscode/settings.json`:
+
+```json
+"playwright.env": {
+  "TEST_ENV": "all",
+  "DEV_BASE_URL": "https://your-dev-url",
+  "PROD_BASE_URL": "https://your-prod-url"
+}
+```
+
+Reload the tests after changing workspace settings. An environment without a configured URL stays selectable but fails immediately with a clear missing-URL message if run.
 
 ## Reports
 
