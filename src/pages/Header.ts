@@ -9,9 +9,9 @@ export class Header {
 
   constructor(private readonly page: Page) {
     this.menuButton = page.locator('#react-burger-menu-btn');
-    this.cartLink = page.locator('[data-test="shopping-cart-link"]');
-    this.cartBadge = page.locator('[data-test="shopping-cart-badge"]');
-    this.title = page.locator('[data-test="title"]');
+    this.cartLink = page.getByTestId('shopping-cart-link');
+    this.cartBadge = page.getByTestId('shopping-cart-badge');
+    this.title = page.getByTestId('title');
   }
 
   async openCart(): Promise<void> {

@@ -2,6 +2,7 @@ import { expect, Locator, Page } from '@playwright/test';
 import { Header } from './Header';
 import { Customer, Product } from '../utils/models';
 import { orderTotals } from '../utils/money';
+import { messages } from '../utils/testData';
 
 export class CheckoutPage {
   readonly header: Header;
@@ -21,24 +22,24 @@ export class CheckoutPage {
 
   constructor(private readonly page: Page) {
     this.header = new Header(page);
-    this.firstName = page.locator('[data-test="firstName"]');
-    this.lastName = page.locator('[data-test="lastName"]');
-    this.postalCode = page.locator('[data-test="postalCode"]');
-    this.continueButton = page.locator('[data-test="continue"]');
-    this.cancelButton = page.locator('[data-test="cancel"]');
-    this.finishButton = page.locator('[data-test="finish"]');
-    this.error = page.locator('[data-test="error"]');
-    this.items = page.locator('[data-test="inventory-item"]');
-    this.subtotal = page.locator('[data-test="subtotal-label"]');
-    this.tax = page.locator('[data-test="tax-label"]');
-    this.total = page.locator('[data-test="total-label"]');
-    this.completeHeader = page.locator('[data-test="complete-header"]');
-    this.backHomeButton = page.locator('[data-test="back-to-products"]');
+    this.firstName = page.getByTestId('firstName');
+    this.lastName = page.getByTestId('lastName');
+    this.postalCode = page.getByTestId('postalCode');
+    this.continueButton = page.getByTestId('continue');
+    this.cancelButton = page.getByTestId('cancel');
+    this.finishButton = page.getByTestId('finish');
+    this.error = page.getByTestId('error');
+    this.items = page.getByTestId('inventory-item');
+    this.subtotal = page.getByTestId('subtotal-label');
+    this.tax = page.getByTestId('tax-label');
+    this.total = page.getByTestId('total-label');
+    this.completeHeader = page.getByTestId('complete-header');
+    this.backHomeButton = page.getByTestId('back-to-products');
   }
 
   async expectInformationStep(): Promise<void> {
     await expect(this.page).toHaveURL(/\/checkout-step-one\.html/);
-    await this.header.expectTitle('Checkout: Your Information');
+    await this.header.expectTitle(messages.checkout.informationTitle);
   }
 
   async fillInformation(customer: Customer): Promise<void> {
@@ -47,26 +48,45 @@ export class CheckoutPage {
     await this.postalCode.fill(customer.postalCode);
   }
 
+  /** Clicks Continue without asserting navigation (validation-error cases). */
   async continue(): Promise<void> {
     await this.continueButton.click();
   }
 
-  async cancel(): Promise<void> {
+  async continueToOverview(): Promise<void> {
+    await this.continueButton.click();
+    await expect(this.page).toHaveURL(/\/checkout-step-two\.html/);
+  }
+
+  async continueExpectingError(message: string): Promise<void> {
+    await this.continueButton.click();
+    await this.expectError(message);
+    await expect(this.page).toHaveURL(/\/checkout-step-one\.html/);
+  }
+
+  async cancelToCart(): Promise<void> {
     await this.cancelButton.click();
+    await expect(this.page).toHaveURL(/\/cart\.html/);
+  }
+
+  async cancelToProducts(): Promise<void> {
+    await this.cancelButton.click();
+    await expect(this.page).toHaveURL(/\/inventory\.html/);
   }
 
   async expectError(message: string): Promise<void> {
+    await expect(this.error).toBeVisible();
     await expect(this.error).toHaveText(message);
   }
 
   async expectOverview(products: Product[]): Promise<void> {
     await expect(this.page).toHaveURL(/\/checkout-step-two\.html/);
-    await this.header.expectTitle('Checkout: Overview');
+    await this.header.expectTitle(messages.checkout.overviewTitle);
     await expect(this.items).toHaveCount(products.length);
     for (const product of products) {
       const row = this.items.filter({ hasText: product.name });
       await expect(row).toBeVisible();
-      await expect(row.locator('[data-test="inventory-item-price"]')).toHaveText(`$${product.price.toFixed(2)}`);
+      await expect(row.getByTestId('inventory-item-price')).toHaveText(`$${product.price.toFixed(2)}`);
     }
     const totals = orderTotals(products.map((product) => product.price));
     await expect(this.subtotal).toHaveText(totals.subtotal);
@@ -80,9 +100,11 @@ export class CheckoutPage {
   }
 
   async expectOrderComplete(): Promise<void> {
-    await this.header.expectTitle('Checkout: Complete!');
-    await expect(this.completeHeader).toHaveText('Thank you for your order!');
-    await expect(this.page.locator('[data-test="complete-text"]')).toContainText('dispatched');
+    await this.header.expectTitle(messages.checkout.completeTitle);
+    await expect(this.completeHeader).toHaveText(messages.checkout.orderCompleteHeader);
+    await expect(this.page.getByTestId('complete-text')).toContainText(
+      messages.checkout.orderCompleteBodyContains,
+    );
     await this.header.expectCartCount(0);
   }
 

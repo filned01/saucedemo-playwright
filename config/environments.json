@@ -1,0 +1,12 @@
+{
+  "testEnv": "qa",
+  "qa": {
+    "url": "https://www.saucedemo.com"
+  },
+  "dev": {
+    "url": "https://www.saucedemo.com"
+  },
+  "prod": {
+    "url": "https://www.saucedemo.com"
+  }
+}

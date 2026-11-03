@@ -1,12 +1,8 @@
-import { test, expect } from '../src/fixtures/test';
-import { products, users } from '../src/utils/testData';
+import { loggedInTest as test, expect } from '../src/fixtures/test';
+import { messages, products, users } from '../src/utils/testData';
 
 test.describe('Burger menu', () => {
-  test.beforeEach(async ({ loginPage }) => {
-    await loginPage.loginAs(users.standard);
-  });
-
-  test('opens and closes the menu', async ({ burgerMenu, productsPage }) => {
+  test('opens and closes the menu', { tag: '@smoke' }, async ({ burgerMenu, productsPage }) => {
     await burgerMenu.open();
     await burgerMenu.close();
     await productsPage.expectLoaded();
@@ -25,7 +21,7 @@ test.describe('Burger menu', () => {
 
   test('About links to saucelabs.com', async ({ burgerMenu }) => {
     await burgerMenu.open();
-    await expect(burgerMenu.about).toHaveAttribute('href', /^https:\/\/(?:www\.)?saucelabs\.com(?:\/|$)/);
+    await expect(burgerMenu.about).toHaveAttribute('href', new RegExp(messages.aboutHrefPattern));
   });
 
   test('Logout returns to the login page and the cart is kept for the next sign-in', async ({
@@ -55,7 +51,7 @@ test.describe('Burger menu', () => {
     await page.reload();
     await productsPage.expectLoaded();
     await expect(
-      productsPage.inventoryItems.filter({ hasText: product.name }).locator(`[data-test="add-to-cart-${product.slug}"]`),
+      productsPage.inventoryItems.filter({ hasText: product.name }).getByTestId(`add-to-cart-${product.slug}`),
     ).toBeVisible();
   });
 

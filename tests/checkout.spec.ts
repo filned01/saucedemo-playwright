@@ -1,26 +1,26 @@
-import { test, expect } from '../src/fixtures/test';
-import { customers, products, users } from '../src/utils/testData';
+import { loggedInTest as test } from '../src/fixtures/test';
+import { customers, messages, products } from '../src/utils/testData';
 
 test.describe('Checkout', () => {
-  test.beforeEach(async ({ loginPage }) => {
-    await loginPage.loginAs(users.standard);
-  });
-
-  test('completes an order for a single product', async ({ productsPage, cartPage, checkoutPage }) => {
-    const product = products[0];
-    await productsPage.addToCart(product);
-    await productsPage.openCart();
-    await cartPage.checkout();
-    await checkoutPage.expectInformationStep();
-    await checkoutPage.fillInformation(customers.valid);
-    await checkoutPage.continue();
-    await checkoutPage.expectOverview([product]);
-    await checkoutPage.finish();
-    await checkoutPage.expectOrderComplete();
-    await checkoutPage.backHome();
-    await productsPage.expectLoaded();
-    await productsPage.header.expectCartCount(0);
-  });
+  test(
+    'completes an order for a single product',
+    { tag: '@smoke' },
+    async ({ productsPage, cartPage, checkoutPage }) => {
+      const product = products[0];
+      await productsPage.addToCart(product);
+      await productsPage.openCart();
+      await cartPage.checkout();
+      await checkoutPage.expectInformationStep();
+      await checkoutPage.fillInformation(customers.valid);
+      await checkoutPage.continueToOverview();
+      await checkoutPage.expectOverview([product]);
+      await checkoutPage.finish();
+      await checkoutPage.expectOrderComplete();
+      await checkoutPage.backHome();
+      await productsPage.expectLoaded();
+      await productsPage.header.expectCartCount(0);
+    },
+  );
 
   test('completes an order for every product and checks the 8 percent tax', async ({
     productsPage,
@@ -33,40 +33,34 @@ test.describe('Checkout', () => {
     await productsPage.openCart();
     await cartPage.checkout();
     await checkoutPage.fillInformation(customers.valid);
-    await checkoutPage.continue();
+    await checkoutPage.continueToOverview();
     await checkoutPage.expectOverview(products);
     await checkoutPage.finish();
     await checkoutPage.expectOrderComplete();
   });
 
-  test('requires a first name', async ({ productsPage, cartPage, checkoutPage, page }) => {
+  test('requires a first name', async ({ productsPage, cartPage, checkoutPage }) => {
     await productsPage.addToCart(products[0]);
     await productsPage.openCart();
     await cartPage.checkout();
     await checkoutPage.fillInformation(customers.missingFirstName);
-    await checkoutPage.continue();
-    await checkoutPage.expectError('Error: First Name is required');
-    await expect(page).toHaveURL(/checkout-step-one\.html/);
+    await checkoutPage.continueExpectingError(messages.checkout.firstNameRequired);
   });
 
-  test('requires a last name', async ({ productsPage, cartPage, checkoutPage, page }) => {
+  test('requires a last name', async ({ productsPage, cartPage, checkoutPage }) => {
     await productsPage.addToCart(products[0]);
     await productsPage.openCart();
     await cartPage.checkout();
     await checkoutPage.fillInformation(customers.missingLastName);
-    await checkoutPage.continue();
-    await checkoutPage.expectError('Error: Last Name is required');
-    await expect(page).toHaveURL(/checkout-step-one\.html/);
+    await checkoutPage.continueExpectingError(messages.checkout.lastNameRequired);
   });
 
-  test('requires a postal code', async ({ productsPage, cartPage, checkoutPage, page }) => {
+  test('requires a postal code', async ({ productsPage, cartPage, checkoutPage }) => {
     await productsPage.addToCart(products[0]);
     await productsPage.openCart();
     await cartPage.checkout();
     await checkoutPage.fillInformation(customers.missingPostalCode);
-    await checkoutPage.continue();
-    await checkoutPage.expectError('Error: Postal Code is required');
-    await expect(page).toHaveURL(/checkout-step-one\.html/);
+    await checkoutPage.continueExpectingError(messages.checkout.postalCodeRequired);
   });
 
   test('cancel on the information step returns to the cart', async ({ productsPage, cartPage, checkoutPage }) => {
@@ -74,7 +68,7 @@ test.describe('Checkout', () => {
     await productsPage.addToCart(product);
     await productsPage.openCart();
     await cartPage.checkout();
-    await checkoutPage.cancel();
+    await checkoutPage.cancelToCart();
     await cartPage.expectLoaded();
     await cartPage.expectItems([product]);
   });
@@ -89,9 +83,9 @@ test.describe('Checkout', () => {
     await productsPage.openCart();
     await cartPage.checkout();
     await checkoutPage.fillInformation(customers.valid);
-    await checkoutPage.continue();
+    await checkoutPage.continueToOverview();
     await checkoutPage.expectOverview([product]);
-    await checkoutPage.cancel();
+    await checkoutPage.cancelToProducts();
     await productsPage.expectLoaded();
     await productsPage.header.expectCartCount(1);
   });
@@ -101,7 +95,7 @@ test.describe('Checkout', () => {
     await cartPage.expectEmpty();
     await cartPage.checkout();
     await checkoutPage.fillInformation(customers.valid);
-    await checkoutPage.continue();
+    await checkoutPage.continueToOverview();
     await checkoutPage.expectOverview([]);
     await checkoutPage.finish();
     await checkoutPage.expectOrderComplete();

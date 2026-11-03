@@ -10,9 +10,9 @@ export class CartPage {
 
   constructor(private readonly page: Page) {
     this.header = new Header(page);
-    this.items = page.locator('[data-test="inventory-item"]');
-    this.checkoutButton = page.locator('[data-test="checkout"]');
-    this.continueShoppingButton = page.locator('[data-test="continue-shopping"]');
+    this.items = page.getByTestId('inventory-item');
+    this.checkoutButton = page.getByTestId('checkout');
+    this.continueShoppingButton = page.getByTestId('continue-shopping');
   }
 
   async expectLoaded(): Promise<void> {
@@ -25,7 +25,7 @@ export class CartPage {
     for (const product of products) {
       const row = this.items.filter({ hasText: product.name });
       await expect(row).toBeVisible();
-      await expect(row.locator('[data-test="inventory-item-price"]')).toHaveText(`$${product.price.toFixed(2)}`);
+      await expect(row.getByTestId('inventory-item-price')).toHaveText(`$${product.price.toFixed(2)}`);
     }
   }
 
@@ -35,7 +35,7 @@ export class CartPage {
   }
 
   async remove(product: Product): Promise<void> {
-    await this.page.locator(`[data-test="remove-${product.slug}"]`).click();
+    await this.page.getByTestId(`remove-${product.slug}`).click();
   }
 
   async continueShopping(): Promise<void> {

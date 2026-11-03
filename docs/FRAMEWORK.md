@@ -4,15 +4,23 @@
 
 ```text
 saucedemo-playwright/
-├── playwright.config.ts      Runner, browser, reporters, base URL
+├── playwright.config.ts      Runner, browsers, reporters, env projects
+├── config/
+│   └── environments.json     QA, DEV, and PROD base URLs + default testEnv
 ├── package.json              Dependencies and npm scripts
 ├── tsconfig.json             Strict TypeScript settings
 ├── test-data/                External test data (JSON)
 │   ├── users.json
 │   ├── products.json
-│   └── customers.json
+│   ├── customers.json
+│   ├── messages.json         Auth/checkout copy and About href pattern
+│   └── routes.json           Protected paths checked while logged out
 ├── src/
-│   ├── fixtures/test.ts      Playwright fixtures that build page objects
+│   ├── auth/
+│   │   ├── global-setup.ts   One login per env → .auth/*-standard.json
+│   │   └── global-teardown.ts Clears .auth in CI
+│   ├── config/environment.ts Typed env selection and URL resolution
+│   ├── fixtures/test.ts      Guest `test` + logged-in `loggedInTest`
 │   ├── pages/                Page Object Model
 │   │   ├── Header.ts         Cart badge, cart link, page title
 │   │   ├── LoginPage.ts
@@ -20,12 +28,14 @@ saucedemo-playwright/
 │   │   ├── CartPage.ts
 │   │   ├── CheckoutPage.ts
 │   │   └── BurgerMenu.ts
+│   ├── reporters/
+│   │   └── environmentReporter.ts
 │   └── utils/
 │       ├── models.ts         Types and sort-option values
 │       ├── testData.ts       Loads JSON and exposes typed data
 │       └── money.ts          Price sums and the 8% tax rule
 ├── tests/                    Specs, grouped by feature
-│   ├── auth.spec.ts
+│   ├── auth.spec.ts          Guest fixtures (real UI login)
 │   ├── products.spec.ts
 │   ├── cart.spec.ts
 │   ├── checkout.spec.ts
@@ -41,14 +51,18 @@ Generated folders (`node_modules`, `playwright-report`, `test-results`) are not 
 Tests talk to page objects. Page objects talk to the browser. Test data lives outside the specs.
 
 ```text
+global setup (once per env)
+  → login as standard_user → save .auth/{env}-standard.json
+
 spec file
-  → fixture (LoginPage, ProductsPage, CartPage, CheckoutPage, BurgerMenu)
-    → page object methods
-      → Playwright locators (data-test and stable ids)
-        → https://www.saucedemo.com
+  → guest `test` or `loggedInTest` (storage state + open inventory)
+    → fixture (LoginPage, ProductsPage, CartPage, CheckoutPage, BurgerMenu)
+      → page object methods
+        → Playwright locators (getByTestId / data-test and stable ids)
+          → configured base URL (qa / dev / prod)
 ```
 
-Each test gets a fresh browser context, so cookies and `sessionStorage` from one test cannot leak into the next. Specs that need a signed-in shopper call `loginPage.loginAs(users.standard)` in `beforeEach`. Authentication specs start from the logged-out login page.
+Each test gets a fresh browser context. Playwright closes that context (and the browser when the worker exits) after screenshots, video, and traces are collected. Logged-in specs import `loggedInTest`, which loads storage state from global setup and opens `/inventory.html` automatically. Auth specs and the problem-user case keep the guest `test` fixture and perform a real UI login.
 
 ## Design patterns
 
@@ -60,11 +74,13 @@ Each screen (login, products, cart, checkout, burger menu) is a class. Locators 
 
 ### Fixtures
 
-`src/fixtures/test.ts` extends Playwright’s `test` and injects page objects. A spec lists the objects it needs in the callback arguments. Playwright builds only those objects, and it builds them after the `page` exists. Specs import `test` and `expect` from the fixture file, not from `@playwright/test` directly.
+`src/fixtures/test.ts` extends Playwright’s `test` and injects page objects. A spec lists the objects it needs in the callback arguments. Playwright builds only those objects, and it builds them after the `page` exists. Specs import `test` / `loggedInTest` and `expect` from the fixture file, not from `@playwright/test` directly.
+
+`validateEnvironment` is an auto fixture: if a selected environment has no `baseURL`, the test fails immediately with the env-var name to set. `loggedInTest` also auto-opens the inventory page so signed-in specs skip repetitive `beforeEach` login calls.
 
 ### Externalized test data
 
-`test-data/*.json` holds users, the catalog, and checkout customers. `src/utils/testData.ts` reads those files from the project root and returns typed objects. Specs do not hardcode product prices or usernames.
+`test-data/*.json` holds users, the catalog, checkout customers, UI messages, and protected routes. `src/utils/testData.ts` reads those files from the project root and returns typed objects. Specs do not hardcode product prices, usernames, or Epic sadface / checkout error copy. Price-sort bounds come from `catalogPriceBounds()`.
 
 Customer records use obvious fake values (`Fake`, `Person`, `00000`). The shopper accounts are the demo accounts published by the SauceDemo site itself.
 
@@ -84,17 +100,21 @@ Tests do not click by screen coordinates and do not depend on the order of anony
 
 ## Configuration
 
-`playwright.config.ts` sets:
+`src/config/environment.ts` owns env selection and URL resolution. `playwright.config.ts` consumes it and sets:
 
-- `baseURL` from the selected environment: `QA_BASE_URL`, `DEV_BASE_URL`, or `PROD_BASE_URL`
-- QA defaults to `https://www.saucedemo.com`; `BASE_URL` remains a compatibility alias for `QA_BASE_URL`
-- `TEST_ENV` selects `qa`, `dev`, `prod`, or `all` (defaults to `qa`); all environments are separate Playwright projects for every browser
-- The VS Code workspace sets `playwright.env.TEST_ENV` to `all`, so the Playwright Test Explorer can select environment/browser projects independently
-- Desktop Chromium, Firefox, and WebKit as browser projects
+- `baseURL` from `config/environments.json`, with `QA_BASE_URL`, `DEV_BASE_URL`, and `PROD_BASE_URL` overrides (`BASE_URL` is still a QA/DEV alias)
+- `testEnv` in `config/environments.json` selects `qa`, `dev`, `prod`, or `all` (default `qa`); `TEST_ENV` overrides it via npm scripts
+- Optional `.env` loading via `loadDotEnv()` (see `.env.example`)
+- `globalSetup` / `globalTeardown` for per-env + per-browser auth under `.auth/`
+- Global setup respects `--project` filters so CI can install one browser at a time
+- `testIdAttribute: 'data-test'` so page objects can use `getByTestId`
+- Stable `locale` / `timezoneId` for consistent CI vs local runs
+- Projects named `{env}-{browser}` (for example `qa-chromium`)
+- `@smoke` tags for a short critical-path subset (`npm run test:smoke`)
+- A custom reporter that prints each environment and its base URL
 - Parallel workers locally, two workers and two retries in CI
-- `forbidOnly` in CI so a leftover `test.only` fails the build
-- HTML and JUnit reporters, plus the list reporter in the terminal
-- Screenshots and video retained on failure, and a trace on the first retry
+- `forbidOnly` in CI, HTML + JUnit + list reporters
+- Screenshots and video on failure, trace on the first retry
 
 ## Reporting
 
@@ -110,7 +130,7 @@ The JUnit file at `test-results/junit-results.xml` is there for pipelines that i
 2. Install Node.js 22 and `npm ci`.
 3. Run ESLint and the TypeScript type check.
 4. Install each browser and its operating-system dependencies.
-5. Run the suite in parallel on Chromium, Firefox, and WebKit.
+5. Run the suite with `TEST_ENV=qa` against `qa-chromium`, `qa-firefox`, and `qa-webkit`.
 6. Upload browser-specific HTML reports and test results.
 
 The workflow runs on push to `main` or `master`, on pull requests, and on manual dispatch. It does not deploy the application. SauceDemo is an external site, so the pipeline is a test runner, not a release pipeline.

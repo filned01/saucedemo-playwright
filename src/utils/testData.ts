@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Customer, Product, UserCredentials } from './models';
+import { Customer, Product, UiMessages, UserCredentials } from './models';
 
 const dataDir = path.join(process.cwd(), 'test-data');
 
@@ -23,6 +23,10 @@ export const products: Product[] = readJson<Product[]>('products.json');
 
 export const customers = readJson<Record<string, Customer>>('customers.json');
 
+export const messages: UiMessages = readJson<UiMessages>('messages.json');
+
+export const protectedPaths: string[] = readJson<{ protectedPaths: string[] }>('routes.json').protectedPaths;
+
 export function productByName(name: string): Product {
   const product = products.find((item) => item.name === name);
   if (!product) {
@@ -35,4 +39,17 @@ export function productByName(name: string): Product {
 export function productsByName(direction: 'asc' | 'desc' = 'asc'): Product[] {
   const sorted = [...products].sort((a, b) => a.name.localeCompare(b.name));
   return direction === 'asc' ? sorted : sorted.reverse();
+}
+
+/** Lowest and highest prices in the catalog (drives sort boundary assertions). */
+export function catalogPriceBounds(): { min: number; max: number } {
+  const prices = products.map((product) => product.price);
+  return {
+    min: Math.min(...prices),
+    max: Math.max(...prices),
+  };
+}
+
+export function protectedPathMessage(pathName: string): string {
+  return messages.auth.protectedPath.replace('{path}', pathName);
 }

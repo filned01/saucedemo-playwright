@@ -7,10 +7,10 @@
 - The catalog stays at six products with the names, ids, slugs, and prices in `test-data/products.json`. Checkout math reads those prices. A catalog change requires a test-data update, not a change to the assertion style.
 - Sales tax is 8% of the item subtotal, rounded to the nearest cent. That matches the overview page on the date this suite was written.
 - A successful order ends at “Thank you for your order!”. The demo does not take payment, create a real shipment, or send email.
-- The signed-in session lives in the browser context. Playwright’s default isolation (one context per test) is what keeps carts from colliding.
+- The signed-in session lives in the browser context. Playwright’s default isolation (one context per test) is what keeps carts from colliding. Logged-in specs seed that context from `.auth/{env}-standard.json` created by global setup; guest/auth specs start with an empty context.
 - Chromium, Firefox, and WebKit are supported locally and in CI. The same browser-independent specs run in each project.
 - Checkout customers in `test-data/customers.json` are synthetic. Any non-empty first name, last name, and postal code are accepted by the demo.
-- English UI copy is part of the contract for error messages and the order-complete heading. Those strings are asserted exactly.
+- English UI copy is part of the contract for error messages and the order-complete heading. Those strings live in `test-data/messages.json` and are asserted exactly.
 
 ## Limitations
 

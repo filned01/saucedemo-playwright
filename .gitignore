@@ -4,7 +4,9 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+.auth/
 *.log
 .env
+.env.local
 .DS_Store
 Thumbs.db

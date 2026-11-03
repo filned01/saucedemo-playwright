@@ -1,19 +1,19 @@
-import { test, expect } from '../src/fixtures/test';
-import { products, users } from '../src/utils/testData';
+import { loggedInTest as test, expect } from '../src/fixtures/test';
+import { products } from '../src/utils/testData';
 
 test.describe('Add to cart', () => {
-  test.beforeEach(async ({ loginPage }) => {
-    await loginPage.loginAs(users.standard);
-  });
-
-  test('adds one product and shows it in the cart', async ({ productsPage, cartPage }) => {
-    const product = products[0];
-    await productsPage.addToCart(product);
-    await productsPage.header.expectCartCount(1);
-    await productsPage.openCart();
-    await cartPage.expectLoaded();
-    await cartPage.expectItems([product]);
-  });
+  test(
+    'adds one product and shows it in the cart',
+    { tag: '@smoke' },
+    async ({ productsPage, cartPage }) => {
+      const product = products[0];
+      await productsPage.addToCart(product);
+      await productsPage.header.expectCartCount(1);
+      await productsPage.openCart();
+      await cartPage.expectLoaded();
+      await cartPage.expectItems([product]);
+    },
+  );
 
   test('adds several products and keeps the badge in step with the cart', async ({ productsPage, cartPage }) => {
     const selected = products.slice(0, 3);
@@ -29,7 +29,7 @@ test.describe('Add to cart', () => {
   test('does not add the same product twice', async ({ productsPage, page }) => {
     const product = products[1];
     await productsPage.addToCart(product);
-    await expect(page.locator(`[data-test="add-to-cart-${product.slug}"]`)).toHaveCount(0);
+    await expect(page.getByTestId(`add-to-cart-${product.slug}`)).toHaveCount(0);
     await productsPage.header.expectCartCount(1);
   });
 
@@ -50,7 +50,9 @@ test.describe('Add to cart', () => {
     await cartPage.continueShopping();
     await productsPage.expectLoaded();
     await productsPage.header.expectCartCount(1);
-    await expect(productsPage.inventoryItems.filter({ hasText: product.name }).locator(`[data-test="remove-${product.slug}"]`)).toBeVisible();
+    await expect(
+      productsPage.inventoryItems.filter({ hasText: product.name }).getByTestId(`remove-${product.slug}`),
+    ).toBeVisible();
   });
 
   test('adds a product from its detail page', async ({ productsPage, cartPage }) => {

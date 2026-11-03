@@ -55,7 +55,11 @@ jobs:
         run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run the test suite
-        run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          TEST_ENV: qa
+          CI: true
+        # Projects are named {env}-{browser}, e.g. qa-chromium
+        run: npx playwright test --project=qa-${{ matrix.browser }}
 
       - name: Upload HTML report
         if: ${{ !cancelled() }}

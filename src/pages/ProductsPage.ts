@@ -11,8 +11,8 @@ export class ProductsPage {
 
   constructor(private readonly page: Page) {
     this.header = new Header(page);
-    this.inventoryItems = page.locator('[data-test="inventory-item"]');
-    this.sortDropdown = page.locator('[data-test="product-sort-container"]');
+    this.inventoryItems = page.getByTestId('inventory-item');
+    this.sortDropdown = page.getByTestId('product-sort-container');
     this.detailName = page.locator('.inventory_details_name');
     this.detailPrice = page.locator('.inventory_details_price');
   }
@@ -29,16 +29,16 @@ export class ProductsPage {
   async expectProductVisible(product: Product): Promise<void> {
     const card = this.inventoryItems.filter({ hasText: product.name });
     await expect(card).toBeVisible();
-    await expect(card.locator('[data-test="inventory-item-price"]')).toHaveText(`$${product.price.toFixed(2)}`);
-    await expect(card.locator('[data-test="inventory-item-desc"]')).not.toBeEmpty();
+    await expect(card.getByTestId('inventory-item-price')).toHaveText(`$${product.price.toFixed(2)}`);
+    await expect(card.getByTestId('inventory-item-desc')).not.toBeEmpty();
   }
 
   async names(): Promise<string[]> {
-    return this.page.locator('[data-test="inventory-item-name"]').allTextContents();
+    return this.page.getByTestId('inventory-item-name').allTextContents();
   }
 
   async prices(): Promise<number[]> {
-    const texts = await this.page.locator('[data-test="inventory-item-price"]').allTextContents();
+    const texts = await this.page.getByTestId('inventory-item-price').allTextContents();
     return texts.map((text) => Number(text.replace('$', '')));
   }
 
@@ -47,8 +47,8 @@ export class ProductsPage {
   }
 
   async addToCart(product: Product): Promise<void> {
-    await this.page.locator(`[data-test="add-to-cart-${product.slug}"]`).click();
-    await expect(this.page.locator(`[data-test="remove-${product.slug}"]`)).toBeVisible();
+    await this.page.getByTestId(`add-to-cart-${product.slug}`).click();
+    await expect(this.page.getByTestId(`remove-${product.slug}`)).toBeVisible();
   }
 
   /** The item detail view has its own Add to cart button, separate from the catalog buttons. */
@@ -59,19 +59,21 @@ export class ProductsPage {
   }
 
   async removeFromCart(product: Product): Promise<void> {
-    await this.page.locator(`[data-test="remove-${product.slug}"]`).click();
-    await expect(this.page.locator(`[data-test="add-to-cart-${product.slug}"]`)).toBeVisible();
+    await this.page.getByTestId(`remove-${product.slug}`).click();
+    await expect(this.page.getByTestId(`add-to-cart-${product.slug}`)).toBeVisible();
   }
 
   async openDetails(product: Product): Promise<void> {
-    await this.page
-      .locator('[data-test="inventory-item-name"]')
-      .getByText(product.name, { exact: true })
-      .click();
+    await this.page.getByTestId('inventory-item-name').getByText(product.name, { exact: true }).click();
     await expect(this.page).toHaveURL(new RegExp(`/inventory-item\\.html\\?id=${product.id}$`));
   }
 
   async openCart(): Promise<void> {
     await this.header.openCart();
+  }
+
+  async backToProducts(): Promise<void> {
+    await this.page.getByTestId('back-to-products').click();
+    await this.expectLoaded();
   }
 }

@@ -40,8 +40,9 @@ export class BurgerMenu {
 
   async clickLogout(): Promise<void> {
     await this.logout.click();
-    await expect(this.page).toHaveURL(/saucedemo\.com\/?$/);
-    await expect(this.page.locator('[data-test="login-button"]')).toBeVisible();
+    // Stay on the configured base URL root (works for qa/dev/prod hosts).
+    await expect(this.page).toHaveURL(/\/(?:index\.html)?$/);
+    await expect(this.page.getByTestId('login-button')).toBeVisible();
   }
 
   async clickResetAppState(): Promise<void> {

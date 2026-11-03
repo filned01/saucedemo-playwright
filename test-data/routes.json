@@ -1,0 +1,9 @@
+{
+  "protectedPaths": [
+    "/inventory.html",
+    "/cart.html",
+    "/checkout-step-one.html",
+    "/checkout-step-two.html",
+    "/checkout-complete.html"
+  ]
+}
